@@ -27,7 +27,13 @@ class User(models.Model):
 
     def __str__(self):
         return self.username
-
-# class OneLine(models.Model):
-#     id = models.AutoField(primary_key=True)
+    
+class Todo_item(models.Model):
+    id = models.AutoField(primary_key=True)
+    owner_id = models.IntegerField()
+    description = models.TextField()
+    random_score = models.IntegerField()
+    done = models.BooleanField()
+    def __str__(self):
+        return f"{self.id}"
     

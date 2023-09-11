@@ -18,6 +18,30 @@ def my_custom_view(request):
     data = {'message': 'This is my custom API endpoint.'}
     return JsonResponse(data)
 
+def test_db_view(request):
+
+    # 创建新的Item记录
+    new_item = models.Item(name='Example Item', description='This is an example item', price=19.99)
+    new_item.save()
+
+    score = models.Score(total_score=1,owner_id=1)
+    score.save()
+
+    # 查询数据库中的Item记录
+    items = models.Item.objects.all()  # 获取所有Item记录
+    filtered_items = models.Item.objects.filter(price__gte=10)  # 获取价格大于等于10的Item记录
+
+    # 更新Item记录
+    item_to_update = models.Item.objects.get(id=1)  # 假设要更新ID为1的记录
+    item_to_update.name = 'Updated Item Name'
+    item_to_update.save()
+
+    # 删除Item记录
+    # item_to_delete = models.Item.objects.get(id=2)  # 假设要删除ID为2的记录
+    # item_to_delete.delete()
+    data = {'message': "okay"}
+    return JsonResponse(data)
+
 @api_view(['PUT'])
 def total_score_view(request):
     userid = request.data.get('userid')
@@ -70,29 +94,14 @@ def range_view(request):
     score.save()
     return JsonResponse({"min":score.min,"max":score.max})
 
-def test_db_view(request):
-
-    # 创建新的Item记录
-    new_item = models.Item(name='Example Item', description='This is an example item', price=19.99)
-    new_item.save()
-
-    score = models.Score(total_score=1,owner_id=1)
-    score.save()
-
-    # 查询数据库中的Item记录
-    items = models.Item.objects.all()  # 获取所有Item记录
-    filtered_items = models.Item.objects.filter(price__gte=10)  # 获取价格大于等于10的Item记录
-
-    # 更新Item记录
-    item_to_update = models.Item.objects.get(id=1)  # 假设要更新ID为1的记录
-    item_to_update.name = 'Updated Item Name'
-    item_to_update.save()
-
-    # 删除Item记录
-    # item_to_delete = models.Item.objects.get(id=2)  # 假设要删除ID为2的记录
-    # item_to_delete.delete()
-    data = {'message': "okay"}
-    return JsonResponse(data)
+@api_view(['POST'])
+def todo_item_view(request):
+    userid = request.data.get('userid')
+    description = request.data.get('description')
+    
+    todo_item = models.Todo_item(owner_id=userid,description="description",random_score=0,done=False)
+    todo_item.save()
+    return JsonResponse({"code":0,"message":"ok"})
 
 @api_view(['POST'])
 def login(request):
