@@ -13,6 +13,7 @@ class Item(models.Model):
 class Score(models.Model):
     id = models.AutoField(primary_key=True)  # 自动创建的ID字段
     total_score = models.IntegerField()
+    target_score = models.IntegerField(default=0)
     owner_id = models.IntegerField()
 
     def __str__(self):

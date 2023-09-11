@@ -9,7 +9,7 @@ from rest_framework.decorators import authentication_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from rest_framework import status
-from django.contrib.auth import authenticate
+
 
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -17,17 +17,49 @@ def my_custom_view(request):
     data = {'message': 'This is my custom API endpoint.'}
     return JsonResponse(data)
 
-def random_number_view(request):
+@api_view(['PUT'])
+def total_score_view(request):
+    userid = request.data.get('userid')
+    tag = request.data.get('tag','increase')
     generator = random_num.RandomNumberGenerator()
     random_number = generator.generate_random_number()
 
-    score = models.Score.objects.get(owner_id=1)
+    score = models.Score.objects.get(owner_id=userid)
     original_score = score.total_score
-    score.total_score += random_number
+    if(tag == 'increase'):
+        score.total_score += random_number
+    else:
+        score.total_score -= random_number
     score.save()
 
     data = {'random_number': random_number,"original_score":original_score,"total_score":score.total_score}
     return JsonResponse(data)
+
+@api_view(['PUT'])
+def cost_total_score_view(request):
+    userid = request.data.get('userid')
+    cost = request.data.get('cost')
+    score = models.Score.objects.get(owner_id=userid)
+    original_score = score.total_score
+    score.total_score -= cost
+    score.save()
+    data = {'cost': cost,"original_score":original_score,"total_score":score.total_score}
+    return JsonResponse(data)
+
+@api_view(['PUT'])
+def target_score_view(request):
+    userid = request.data.get('userid')
+    target_score = request.data.get('target_score')
+    score = models.Score.objects.get(owner_id=userid)
+    score.target_score = target_score
+    return JsonResponse({"target_score":score.target_score})
+
+@api_view(['GET'])
+def score_view(request):
+    userid = request.data.get('userid')
+    print(userid)
+    score = models.Score.objects.get(owner_id=userid) 
+    return JsonResponse({"total_score":score.total_score,"target_score":score.target_score})
 
 def test_db_view(request):
 
@@ -53,8 +85,6 @@ def test_db_view(request):
     data = {'message': "okay"}
     return JsonResponse(data)
 
-
-
 @api_view(['POST'])
 def login(request):
     username = request.data.get('username')
@@ -66,11 +96,11 @@ def login(request):
         user = None
 
     if user is not None:
-        from django.contrib.auth.models import User
-        user = User.objects.create_user(username="test2", password="test2")
-        token, created = Token.objects.get_or_create(user=user)
-        return Response({'message': 'Login successful', 'token': token.key, 'user_id': user.id})
+        # from django.contrib.auth.models import User
+        # user1 = User.objects.create_user(username=user.username, password=user.password)
+        # token, created = Token.objects.get_or_create(user=user1)
+        return Response({'message': 'Login successful', 'token': "jwt_token", 'user_id': user.id,"code":0})
     else:
-        return Response({'error': 'Invalid username or password'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Invalid username or password',"code":1}, status=status.HTTP_400_BAD_REQUEST)
 
 
