@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from entropy_decrease.src import random_num
 from django.http import JsonResponse
+import random
 from . import models  # 导入Item模型
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view
@@ -21,24 +22,21 @@ def my_custom_view(request):
 def total_score_view(request):
     userid = request.data.get('userid')
     tag = request.data.get('tag','increase')
-    generator = random_num.RandomNumberGenerator()
-    random_number = generator.generate_random_number()
-
     score = models.Score.objects.get(owner_id=userid)
+    random_number = random.randint(score.min, score.max)
     original_score = score.total_score
     if(tag == 'increase'):
         score.total_score += random_number
     else:
         score.total_score -= random_number
     score.save()
-
-    data = {'random_number': random_number,"original_score":original_score,"total_score":score.total_score}
+    data = {'random_number': random_number,"original_score":original_score,"total_score":score.total_score,"min":score.min,"max":score.max}
     return JsonResponse(data)
 
 @api_view(['PUT'])
 def cost_total_score_view(request):
     userid = request.data.get('userid')
-    cost = request.data.get('cost')
+    cost = int(request.data.get('cost'))
     score = models.Score.objects.get(owner_id=userid)
     original_score = score.total_score
     score.total_score -= cost
@@ -60,6 +58,17 @@ def score_view(request):
     print(userid)
     score = models.Score.objects.get(owner_id=userid) 
     return JsonResponse({"total_score":score.total_score,"target_score":score.target_score})
+
+@api_view(['POST'])
+def range_view(request):
+    userid = request.data.get('userid')
+    min = request.data.get('min')
+    max = request.data.get('max')
+    score = models.Score.objects.get(owner_id=userid) 
+    score.min = min
+    score.max = max
+    score.save()
+    return JsonResponse({"min":score.min,"max":score.max})
 
 def test_db_view(request):
 

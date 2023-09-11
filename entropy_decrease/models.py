@@ -15,7 +15,8 @@ class Score(models.Model):
     total_score = models.IntegerField()
     target_score = models.IntegerField(default=0)
     owner_id = models.IntegerField()
-
+    min = models.IntegerField(default=1)
+    max = models.IntegerField(default=100)
     def __str__(self):
         return f"ID: {self.id}, Total Score: {self.total_score}"
 
