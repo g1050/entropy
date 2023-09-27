@@ -44,15 +44,19 @@ def test_db_view(request):
 
 @api_view(['PUT'])
 def total_score_view(request):
-    userid = request.data.get('userid')
-    tag = request.data.get('tag','increase')
+    userid = request.GET.get('userid')
+    tag = request.GET.get('tag','increase')
     score = models.Score.objects.get(owner_id=userid)
     random_number = random.randint(score.min, score.max)
     original_score = score.total_score
     if(tag == 'increase'):
         score.total_score += random_number
-    else:
+    elif(tag == 'decrease'):
         score.total_score -= random_number
+    elif(tag == 'reset'):
+        score.total_score = 0
+    else:
+        return JsonResponse({"messge": "tag doesn't support!"})
     score.save()
     data = {'random_number': random_number,"original_score":original_score,"total_score":score.total_score,"min":score.min,"max":score.max}
     return JsonResponse(data)
@@ -70,24 +74,26 @@ def cost_total_score_view(request):
 
 @api_view(['PUT'])
 def target_score_view(request):
-    userid = request.data.get('userid')
-    target_score = request.data.get('target_score')
+    userid = request.GET.get('userid')
+    target_score = request.GET.get('target_score')
+    print(target_score)
     score = models.Score.objects.get(owner_id=userid)
     score.target_score = target_score
+    score.save()
     return JsonResponse({"target_score":score.target_score})
 
 @api_view(['GET'])
 def score_view(request):
-    userid = request.data.get('userid')
+    userid = request.GET.get('userid')
     print(userid)
     score = models.Score.objects.get(owner_id=userid) 
-    return JsonResponse({"total_score":score.total_score,"target_score":score.target_score})
+    return JsonResponse({"total_score":score.total_score,"target_score":score.target_score,"max":score.max,"min":score.min})
 
 @api_view(['POST'])
 def range_view(request):
-    userid = request.data.get('userid')
-    min = request.data.get('min')
-    max = request.data.get('max')
+    userid = request.GET.get('userid')
+    min = request.GET.get('min')
+    max = request.GET.get('max')
     score = models.Score.objects.get(owner_id=userid) 
     score.min = min
     score.max = max

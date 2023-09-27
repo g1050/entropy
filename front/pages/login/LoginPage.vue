@@ -12,7 +12,11 @@
 			</div>
 			<button @click.prevent="login">登录</button>
 		</form>
+		Hello
+		<router-view></router-view>
+		<tab-bar :tab-bar="tabBar"></tab-bar>
 	</div>
+	
 </template>
 <script>
 	export default {
